@@ -6,9 +6,15 @@ import { stat } from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
 import { TaskRepository } from './repository/task.repository';
+import { createQueryBuilder } from 'typeorm';
 @Injectable()
 export class TasksService {
   constructor(private readonly taskRepository: TaskRepository) {}
+
+  async getTasks(taskFilterDTO: TaskFilterDTO): Promise<Task[]> {
+    return this.taskRepository.getTasks(taskFilterDTO);
+  }
+
   async getTaskById(id: number): Promise<Task> {
     const task = await this.taskRepository.findOneBy({ id: id });
     if (!task) {
@@ -26,5 +32,15 @@ export class TasksService {
 
   async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
     return this.taskRepository.createTask(createTaskDto);
+  }
+
+  async updateTaskStatusById(
+    id: number,
+    updateTaskStatusDTO: UpdateTaskDTO,
+  ): Promise<Task> {
+    const task = await this.getTaskById(id);
+    task.status = updateTaskStatusDTO.status;
+    await task.save();
+    return task;
   }
 }

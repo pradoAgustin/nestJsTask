@@ -21,14 +21,12 @@ import { Task } from './entities/task.entity';
 export class TasksController {
   constructor(private taskService: TasksService) {}
 
-  // @Get()
-  // getAllTasks(@Query(ValidationPipe) taskFilterDTO: TaskFilterDTO): Task[] {
-  //   if (Object.keys(taskFilterDTO).length) {
-  //     return this.taskService.getTasksWithFilter(taskFilterDTO);
-  //   } else {
-  //     return this.taskService.getTasks();
-  //   }
-  // }
+  @Get()
+  getAllTasks(
+    @Query(ValidationPipe) taskFilterDTO: TaskFilterDTO,
+  ): Promise<Task[]> {
+    return this.taskService.getTasks(taskFilterDTO);
+  }
 
   @Get(':id')
   getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
@@ -46,11 +44,11 @@ export class TasksController {
     return this.taskService.deleteTaskById(id);
   }
 
-  // @Patch(':id/status')
-  // updateTaskStatusById(
-  //   @Param('id') id: string,
-  //   @Body(ValidationPipe) updateTaskStatusDTO: UpdateTaskDTO,
-  // ) {
-  //   return this.taskService.updateTaskStatusById(id, updateTaskStatusDTO);
-  // }
+  @Patch(':id/status')
+  updateTaskStatusById(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) updateTaskStatusDTO: UpdateTaskDTO,
+  ) {
+    return this.taskService.updateTaskStatusById(id, updateTaskStatusDTO);
+  }
 }
