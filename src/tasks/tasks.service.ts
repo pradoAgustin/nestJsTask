@@ -1,4 +1,4 @@
-import { Body, Injectable, NotFoundException } from '@nestjs/common';
+import { Body, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDTO } from './dto/update-task-dto';
 import { TaskFilterDTO } from './dto/task-filter.dto';
@@ -6,10 +6,12 @@ import { stat } from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
 import { TaskRepository } from './repository/task.repository';
-import { createQueryBuilder } from 'typeorm';
 @Injectable()
 export class TasksService {
-  constructor(private readonly taskRepository: TaskRepository) {}
+  constructor(
+    @InjectRepository(TaskRepository)
+    private readonly taskRepository: TaskRepository,
+  ) {}
 
   async getTasks(taskFilterDTO: TaskFilterDTO): Promise<Task[]> {
     return this.taskRepository.getTasks(taskFilterDTO);
