@@ -2,10 +2,11 @@ import { Body, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDTO } from './dto/update-task-dto';
 import { TaskFilterDTO } from './dto/task-filter.dto';
-import { stat } from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
 import { TaskRepository } from './repository/task.repository';
+import { User } from 'src/auth/entities/user.entity';
+import { Equal } from 'typeorm';
 @Injectable()
 export class TasksService {
   constructor(
@@ -13,12 +14,17 @@ export class TasksService {
     private readonly taskRepository: TaskRepository,
   ) {}
 
-  async getTasks(taskFilterDTO: TaskFilterDTO): Promise<Task[]> {
-    return this.taskRepository.getTasks(taskFilterDTO);
+  async getTasks(taskFilterDTO: TaskFilterDTO, user: User): Promise<Task[]> {
+    return this.taskRepository.getTasks(taskFilterDTO, user);
   }
 
-  async getTaskById(id: number): Promise<Task> {
-    const task = await this.taskRepository.findOneBy({ id: id });
+  async getTaskById(id: number, user: User): Promise<Task> {
+    const task = await this.taskRepository.findOne({
+      where: {
+        id: id,
+        userId: Equal(user.id),
+      },
+    });
     if (!task) {
       new NotFoundException(`task with id: ${id} not found`);
     }
@@ -32,15 +38,16 @@ export class TasksService {
     }
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
-    return this.taskRepository.createTask(createTaskDto);
+  async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
+    return this.taskRepository.createTask(createTaskDto, user);
   }
 
   async updateTaskStatusById(
     id: number,
     updateTaskStatusDTO: UpdateTaskDTO,
+    user: User,
   ): Promise<Task> {
-    const task = await this.getTaskById(id);
+    const task = await this.getTaskById(id, user);
     task.status = updateTaskStatusDTO.status;
     await task.save();
     return task;
